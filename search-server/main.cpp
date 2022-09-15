@@ -75,14 +75,11 @@ public:
      */
     void AddDocument(int document_id, const string& document) {
         ++document_count_;
-//        int match_word_count = 0;
         const vector<string> words = SplitIntoWordsNoStop(document);
-        double word_tf = 0.0;
         if(!document.empty()) {
             for (const string& word : words) {
                 map<int, double> docs_id_tf;
-                word_tf = static_cast<double>(count(words.begin(), words.end(), word))/words.size();
-                documents_to_freqs_[word].insert({document_id, word_tf});
+                documents_to_freqs_[word][document_id] += 1.0 / words.size();
             }
         }
     }
@@ -137,7 +134,7 @@ private:
      * Check if word contains "-"
      */
     static bool IsMinus(const string& word) {
-        return count_if(word.begin(), word.end(), [](const char& ch){return ch == '-';}) > 0;
+        return word[0] == '-';
     }
     /*
      * Parse text and allocate to plus- and minus-words containers
@@ -159,6 +156,14 @@ private:
         return query_words;
     }
     /*
+     * Calculate IDF
+     */
+    double CalculateIDF (const int& document_count, const int& docs_with_word_count) const {
+        double idf;
+        idf = log(1.0 * document_count / docs_with_word_count);
+        return idf;
+    }
+    /*
      * Parse raw_query from input, calculate relevance, clear minus-words consist documents
      */
     vector<Document> FindAllDocuments(const string& raw_query) const {
@@ -167,7 +172,6 @@ private:
         set<string> minus_words = query_words.minus_words;
         set<string> plus_words = query_words.plus_words;
         double idf = 0.0;
-        double idf_tf = 0.0;
         map<int, double> relevance;
         set<int> num_doc_for_del;
         
@@ -177,11 +181,11 @@ private:
                 continue;
             }
             // Loop for doc what consist plus_word (get id and tf)
-            // Calculate idf; idf*tf, add up to relevance
+            // Calculate idf; idf * tf, add up to relevance
             for (const auto& [id, tf] : documents_to_freqs_.at(plus_word)) {
-                idf = log(1.0*document_count_/documents_to_freqs_.at(plus_word).size());
-                idf_tf = idf*tf;
-                relevance[id] += idf_tf;
+                int docs_with_word_count = static_cast<int>(documents_to_freqs_.at(plus_word).size());
+                idf = CalculateIDF(document_count_, docs_with_word_count);
+                relevance[id] += idf * tf;
             }
         }
         
