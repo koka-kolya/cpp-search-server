@@ -1,5 +1,5 @@
 /*
- * Sprint 3. Framework and search server.
+ * Sprint 3. Framework and search server. With corrections after the 1st review.
  */
 void TestExcludeStopWordsFromAddedDocumentContent() {
 	const int doc_id = 42;
