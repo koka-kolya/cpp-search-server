@@ -9,10 +9,12 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <numeric>
 
 using namespace std;
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+const double CONST_DOUBLE_EXPRESSION_ERROR = 1e-6;
 
 string ReadLine() {
 	string s;
@@ -81,36 +83,29 @@ enum class DocumentStatus {
 
 class SearchServer {
 public:
-	inline static constexpr int INVALID_DOCUMENT_ID = -1;
 	template <typename StringContainer>
 	explicit SearchServer(const StringContainer& stop_words)
 	: stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
-		for (const string& word : stop_words) {
+		all_of(stop_words.begin(), stop_words.end(), [](const string& word){
 			if (!IsValidWord(word)) {
-				throw invalid_argument("Stop word contains a special character"s);
+				throw invalid_argument("Stop word [" + word + "] contains a special character"s);
 			}
-		}
+			return true;
+		});
 	}
 	
 	explicit SearchServer(const string& stop_words_text)
-	: SearchServer(
-				   SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
+	: SearchServer(SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
 	{
-		if (!IsValidWord(stop_words_text)) {
-			throw invalid_argument("Stop words contains a special character"s);
-		}
 	}
 	
 	void AddDocument(int document_id, const string& document, DocumentStatus status,
 					 const vector<int>& ratings) {
 		if (document_id < 0) {
-			throw invalid_argument("Document ID less than 0"s);
+			throw invalid_argument("Document ID "s + to_string(document_id) + " < 0"s);
 		}
 		if (documents_.count(document_id) > 0) {
-			throw invalid_argument("Documents already exists at document with this ID"s);
-		}
-		if (!IsValidWord(document)) {
-			throw invalid_argument("Document contains a special character");
+			throw invalid_argument("Documents already exists at document with ID: "s + to_string(document_id));
 		}
 		
 		const vector<string> words = SplitIntoWordsNoStop(document);
@@ -124,13 +119,12 @@ public:
 	
 	template <typename DocumentPredicate>
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
-		IsNoQueryExceptions(raw_query);
 		const Query query = ParseQuery(raw_query);
 		auto matched_documents = FindAllDocuments(query, document_predicate);
 		
 		sort(matched_documents.begin(), matched_documents.end(),
 			 [](const Document& lhs, const Document& rhs) {
-			if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+			if (abs(lhs.relevance - rhs.relevance) < CONST_DOUBLE_EXPRESSION_ERROR) {
 				return lhs.rating > rhs.rating;
 			} else {
 				return lhs.relevance > rhs.relevance;
@@ -143,10 +137,9 @@ public:
 	}
 	
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status) const {
-		return FindTopDocuments(
-								raw_query, [status](int document_id, DocumentStatus document_status, int rating) {
-									return document_status == status;
-								});
+		return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus document_status, int rating) {
+			return document_status == status;
+		});
 	}
 	
 	vector<Document> FindTopDocuments(const string& raw_query) const {
@@ -159,15 +152,13 @@ public:
 	
 	int GetDocumentId(int index) const {
 		if (index < 0 || index >= GetDocumentCount()) {
-			throw out_of_range("Index is out of range [0; document count)"s);
+			throw out_of_range("Index is out of range: [0; document count)"s);
 		}
 		return documents_id_[index];
 	}
 	
 	tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const {
-		IsNoQueryExceptions(raw_query);
 		const Query query = ParseQuery(raw_query);
-		
 		vector<string> matched_words;
 		for (const string& word : query.plus_words) {
 			if (word_to_document_freqs_.count(word) == 0) {
@@ -208,6 +199,9 @@ private:
 		vector<string> words;
 		for (const string& word : SplitIntoWords(text)) {
 			if (!IsStopWord(word)) {
+				if (!IsValidWord(word)) {
+					throw invalid_argument("Word [" + word + "] consist a special character");
+				}
 				words.push_back(word);
 			}
 		}
@@ -218,11 +212,7 @@ private:
 		if (ratings.empty()) {
 			return 0;
 		}
-		int rating_sum = 0;
-		for (const int rating : ratings) {
-			rating_sum += rating;
-		}
-		return rating_sum / static_cast<int>(ratings.size());
+		return accumulate(ratings.begin(), ratings.end(), 0) / static_cast<int>(ratings.size());
 	}
 	
 	struct QueryWord {
@@ -232,11 +222,20 @@ private:
 	};
 	
 	QueryWord ParseQueryWord(string text) const {
+		if (!IsValidWord(text)) {
+			throw invalid_argument("Word [" + text + "] consist a special character"s);
+		};
 		bool is_minus = false;
 		// Word shouldn't be empty
 		if (text[0] == '-') {
 			is_minus = true;
 			text = text.substr(1);
+			if (text.empty()) {
+				throw invalid_argument("No text after minus-character"s);
+			}
+			if (text[0] == '-') {
+				throw invalid_argument("Query consist more than one minus-character before [" + text + "]"s);
+			}
 		}
 		return {text, is_minus, IsStopWord(text)};
 	}
@@ -293,28 +292,9 @@ private:
 		
 		vector<Document> matched_documents;
 		for (const auto [document_id, relevance] : document_to_relevance) {
-			matched_documents.push_back(
-										{document_id, relevance, documents_.at(document_id).rating});
+			matched_documents.push_back({document_id, relevance, documents_.at(document_id).rating});
 		}
 		return matched_documents;
-	}
-	
-	bool IsMoreThanOneMinus(const Query& query) const {
-		for (const string& word : query.minus_words) {
-			if (word[0] == '-') {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	bool IsNoTextAfterMinus(const Query& query) const {
-		for (const string& word : query.minus_words) {
-			if (word.empty()) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	static bool IsValidWord(const string& word) {
@@ -322,20 +302,5 @@ private:
 		return none_of(word.begin(), word.end(), [](char c) {
 			return c >= '\0' && c < ' ';
 		});
-	}
-	
-	bool IsNoQueryExceptions(const string& raw_query) const {
-		const Query query = ParseQuery(raw_query);
-		
-		if (!IsValidWord(raw_query)) {
-			throw invalid_argument("Query contains a special character"s);
-		}
-		if (IsMoreThanOneMinus(query)) {
-			throw invalid_argument("Query contains more than one minus-character before word"s);
-		}
-		if (IsNoTextAfterMinus(query)) {
-			throw invalid_argument("Query doesn't contain text after the minus-character"s);
-		}
-		return true;
 	}
 };
