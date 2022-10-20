@@ -1,5 +1,5 @@
 /*
- * Sprint 4. Error processing. Exceprions
+ * Sprint 4. Error processing. Exceptions
  */
 #include <algorithm>
 #include <cmath>
