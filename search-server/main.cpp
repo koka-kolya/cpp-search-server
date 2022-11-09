@@ -11,15 +11,14 @@
 #include <utility>
 #include <vector>
 
-//include h-files
+#include "search_server.h"
 #include "read_input_functions.h"
 #include "string_processing.h"
 #include "document.h"
-#include "search_server.h"
 #include "paginator.h"
 #include "request_queue.h"
-//ends include h-files
 
+using namespace std;
 
 int main() {
 	SearchServer search_server("and in at"s);

@@ -5,13 +5,11 @@
 #include <vector>
 #include <utility>
 
-#include "document.h"
-
 template<typename Iterator>
 class IteratorRange {
 public:
 	explicit IteratorRange(Iterator begin, Iterator end) {
-		iterator_range_ = pair(begin, end);
+		iterator_range_ = std::pair(begin, end);
 	}
 	Iterator begin() {
 		return iterator_range_.first;
@@ -19,7 +17,7 @@ public:
 	Iterator end() {
 		return iterator_range_.second;
 	}
-	size_t size() {
+	std::size_t size() {
 		return distance(iterator_range_.first, iterator_range_.second);
 	}
 private:
@@ -29,7 +27,7 @@ private:
 template <typename Iterator>
 class Paginator {
 public:
-	explicit Paginator(Iterator begin, Iterator end, size_t page_size) {
+	explicit Paginator(Iterator begin, Iterator end, std::size_t page_size) {
 		if (page_size != 0) {
 			for (auto it = begin; it < end; ) {
 				if (distance(it, end) < page_size) {
@@ -52,7 +50,7 @@ public:
 	auto end() const {
 		return pages_.end();
 	}
-	size_t size() const {
+	std::size_t size() const {
 		return pages_.size();
 	}
 private:
@@ -60,7 +58,7 @@ private:
 };
 
 template <typename Container>
-auto Paginate(const Container& c, size_t page_size) {
+auto Paginate(const Container& c, std::size_t page_size) {
 	return Paginator(begin(c), end(c), page_size);
 }
 
