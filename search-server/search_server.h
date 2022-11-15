@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <numeric>
 #include <map>
 #include <set>
@@ -14,6 +15,7 @@
 #include "read_input_functions.h"
 #include "string_processing.h"
 
+
 class SearchServer {
 public:
 	template <typename StringContainer>
@@ -21,7 +23,6 @@ public:
 	explicit SearchServer(const std::string& stop_words_text)
 	: SearchServer(SplitIntoWords(stop_words_text))
 	{
-		using namespace std;
 	}
 	
 	void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
@@ -32,11 +33,16 @@ public:
 	std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 	
 	int GetDocumentCount() const;
+
+	std::vector<int>::const_iterator begin() const;
+	std::vector<int>::const_iterator end() const;
 	
-	int GetDocumentId(int index) const;
+	const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+	
+	void RemoveDocument(int document_id);
 	
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
-	
+
 private:
 	struct DocumentData {
 		int rating;
@@ -52,21 +58,11 @@ private:
 	
 	bool IsStopWord(const std::string& word) const;
 	
-	static bool IsValidWord(const std::string& word) {
-		return none_of(word.begin(), word.end(), [](char c) {
-			return c >= '\0' && c < ' ';
-		});
-	}
+	static bool IsValidWord(const std::string& word);
 	
 	std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
 	
-	static int ComputeAverageRating(const std::vector<int>& ratings) {
-		if (ratings.empty()) {
-			return 0;
-		}
-		int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
-		return rating_sum / static_cast<int>(ratings.size());
-	}
+	static int ComputeAverageRating(const std::vector<int>& ratings);
 	
 	struct QueryWord {
 		std::string data;
@@ -91,6 +87,7 @@ private:
 
 /*
  *	Specifying SearchServer template methods
+ *
  */
 
 template <typename StringContainer>
@@ -108,7 +105,6 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_quer
 	const auto query = ParseQuery(raw_query);
 	
 	auto matched_documents = FindAllDocuments(query, document_predicate);
-	
 	sort(matched_documents.begin(), matched_documents.end(),
 		 [this](const Document& lhs, const Document& rhs) {
 		if (std::abs(lhs.relevance - rhs.relevance) < kRoundingError) {
