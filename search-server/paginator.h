@@ -1,4 +1,5 @@
 #pragma once
+#include "document.h"
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -20,6 +21,7 @@ public:
     std::size_t size() {
         return distance(iterator_range_.first, iterator_range_.second);
     }
+
 private:
     std::pair<Iterator, Iterator> iterator_range_;
 };

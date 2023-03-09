@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-//#include "log_duration.h"
-//#include "test_framework.h"
-
 using namespace std::string_literals;
 
 template <typename Key, typename Value>
@@ -33,7 +30,6 @@ public:
             ref_to_value(inner_bucket.bucket_map_[key])
         {
         }
-
     };
 
     explicit ConcurrentMap(size_t bucket_count)
