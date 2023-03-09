@@ -11,8 +11,10 @@ SearchServer::SearchServer(const std::string& stop_words)
 {
 }
 
-void SearchServer::AddDocument(int document_id, std::string_view document,
-								DocumentStatus status,const std::vector<int>& ratings) {
+void SearchServer::AddDocument(int document_id,
+							   std::string_view document,
+							   DocumentStatus status,
+							   const std::vector<int>& ratings) {
     using namespace std;
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
         throw std::invalid_argument("Invalid document_id"s);
