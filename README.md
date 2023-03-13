@@ -22,7 +22,7 @@
 - `document.h` структуры Document и enum-класс DocumentStatus
 - `log_duration.h` профилировщик, позволяющий измерять время выполнения программы целиком или отдельных функций
 - `paginator.h` реализация функционала пагинатора страниц
-- `process_queries.h | cpp` реализация очереди запросов
+- `process_queries.h | .cpp` реализация очереди запросов
 - `read_input_functions.h | .cpp` функции чтения и обработки входного потока
 - `string_processing.h | .cpp` вспомогательные функции обработки текста
 - `text_example_functions.h | .cpp` функции с примерами использования и бенчмарки
