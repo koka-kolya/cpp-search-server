@@ -17,7 +17,7 @@
 - CMake 3.25.2
 
 ### Содержание файлов
-- `search_server.h|.cpp` класс SearchServer, функционал поисковой системы
+- `search_server.h | .cpp` класс SearchServer, функционал поисковой системы
 - `concurrent_map.h` реализация потокобезопасного контейнера ConcurrentMap
 - `document.h` структуры Document и enum-класс DocumentStatus
 - `log_duration.h` профилировщик, позволяющий измерять время выполнения программы целиком или отдельных функций
