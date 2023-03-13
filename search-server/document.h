@@ -15,7 +15,7 @@ struct Document {
 enum class DocumentStatus {
     ACTUAL,
     IRRELEVANT,
-    BANNED,
+	BANNED,
     REMOVED,
 };
 

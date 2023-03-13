@@ -13,6 +13,7 @@ RequestQueue::AddFindRequest(const std::string& raw_query) {
     return AddFindRequest(raw_query, DocumentStatus::ACTUAL);
 }
 
-int RequestQueue::GetNoResultRequests() const {
+int
+RequestQueue::GetNoResultRequests() const {
     return requests_no_result_;
 }

@@ -1,6 +1,7 @@
 #include "string_processing.h"
 
-std::vector<std::string_view> SplitIntoWords(std::string_view str) {
+std::vector<std::string_view>
+SplitIntoWords(std::string_view str) {
     std::vector<std::string_view> result;
 
     int64_t end_pos = str.npos;

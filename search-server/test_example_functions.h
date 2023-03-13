@@ -12,22 +12,25 @@ void Example1();
 void Example2();
 void Example3();
 
+std::string
+GenerateWord(std::mt19937& generator, int max_length);
 
-std::string GenerateWord(std::mt19937& generator, int max_length);
+std::vector<std::string>
+GenerateDictionary(std::mt19937& generator,
+				   int word_count,
+				   int max_length);
 
-std::vector<std::string> GenerateDictionary(std::mt19937& generator,
-											int word_count,
-											int max_length);
+std::string
+GenerateQuery(std::mt19937& generator,
+			  const std::vector<std::string>& dictionary,
+			  int word_count,
+			  double minus_prob = 0);
 
-std::string GenerateQuery(std::mt19937& generator,
-						  const std::vector<std::string>& dictionary,
-						  int word_count,
-						  double minus_prob = 0);
-
-std::vector<std::string> GenerateQueries(std::mt19937& generator,
-										 const std::vector<std::string>& dictionary,
-										 int query_count,
-										 int max_word_count);
+std::vector<std::string>
+GenerateQueries(std::mt19937& generator,
+				const std::vector<std::string>& dictionary,
+				int query_count,
+				int max_word_count);
 
 template <typename ExecutionPolicy>
 void Test(std::string_view mark, const SearchServer& search_server,

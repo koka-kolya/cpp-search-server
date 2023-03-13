@@ -27,8 +27,7 @@ public:
 
         Access (const Key& key, InnerMutexMap& inner_bucket)
             : guard(inner_bucket.bucket_mutex_),
-            ref_to_value(inner_bucket.bucket_map_[key])
-        {
+			ref_to_value(inner_bucket.bucket_map_[key]) {
         }
     };
 

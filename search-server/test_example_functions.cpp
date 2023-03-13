@@ -71,6 +71,7 @@ void Example2() {
 
 	auto report = [&search_server, &query] {
 		std::cout << "seq - par" << std::endl;
+
 		cout << search_server.GetDocumentCount() << " documents total, "s
 			 << search_server.FindTopDocuments(std::execution::seq, query).size()
 			 << " documents for query ["s << query << "]"s << endl;
@@ -122,17 +123,20 @@ void Example3() {
 		}) {
 		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
 	}
+	search_server.AddDocument(++id, "curly brown dog"s, DocumentStatus::BANNED, {2, 3, 4, 5});
+
+	std::string query = "curly nasty cat"s;
 	cout << "ACTUAL by default:"s << endl;
 	// последовательная версия
 	for (const Document& document :
-		 search_server.FindTopDocuments("curly nasty cat"s)) {
+		 search_server.FindTopDocuments(query)) {
 		PrintDocument(document);
 	}
 	cout << "BANNED:"s << endl;
 	// последовательная версия
 	for (const Document& document :
 		 search_server.FindTopDocuments(execution::seq,
-										"curly nasty cat"s,
+										query,
 										DocumentStatus::BANNED)) {
 		PrintDocument(document);
 	}
@@ -140,7 +144,7 @@ void Example3() {
 	// параллельная версия
 	for (const Document& document :
 		 search_server.FindTopDocuments(execution::par,
-										"curly nasty cat"s,
+										query,
 										[](int document_id, DocumentStatus status, int rating) {
 											return document_id % 2 == 0;
 									})) {
@@ -149,7 +153,9 @@ void Example3() {
 	cout << endl;
 }
 
-std::string GenerateWord(std::mt19937& generator, int max_length) {
+std::string
+GenerateWord(std::mt19937& generator,
+			 int max_length) {
 	using namespace std;
 	const int length = uniform_int_distribution(1, max_length)(generator);
 	string word;
@@ -160,9 +166,10 @@ std::string GenerateWord(std::mt19937& generator, int max_length) {
 	return word;
 }
 
-std::vector<std::string> GenerateDictionary(std::mt19937& generator,
-											int word_count,
-											int max_length) {
+std::vector<std::string>
+GenerateDictionary(std::mt19937& generator,
+				   int word_count,
+				   int max_length) {
 	std::vector<std::string> words;
 	words.reserve(word_count);
 	for (int i = 0; i < word_count; ++i) {
@@ -172,10 +179,11 @@ std::vector<std::string> GenerateDictionary(std::mt19937& generator,
 	return words;
 }
 
-std::string GenerateQuery(std::mt19937& generator,
-						  const std::vector<std::string>& dictionary,
-						  int word_count,
-						  double minus_prob) {
+std::string
+GenerateQuery(std::mt19937& generator,
+			  const std::vector<std::string>& dictionary,
+			  int word_count,
+			  double minus_prob) {
 	std::string query;
 	for (int i = 0; i < word_count; ++i) {
 		if (!query.empty()) {
@@ -189,10 +197,11 @@ std::string GenerateQuery(std::mt19937& generator,
 	return query;
 }
 
-std::vector<std::string> GenerateQueries(std::mt19937& generator,
-										 const std::vector<std::string>& dictionary,
-										 int query_count,
-										 int max_word_count) {
+std::vector<std::string>
+GenerateQueries(std::mt19937& generator,
+				const std::vector<std::string>& dictionary,
+				int query_count,
+				int max_word_count) {
 	std::vector<std::string> queries;
 	queries.reserve(query_count);
 	for (int i = 0; i < query_count; ++i) {
@@ -210,9 +219,9 @@ void Benchmark1() {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
 	}
 	const auto queries = GenerateQueries(generator, dictionary, 100, 70);
-	std::cout << "Benchmark 1" << std::endl;
-	Test("SEQ", search_server, queries, std::execution::seq);
-	Test("PAR", search_server, queries, std::execution::par);
+	std::cout << "Benchmark 1"s << std::endl;
+	Test("SEQ"s, search_server, queries, std::execution::seq);
+	Test("PAR"s, search_server, queries, std::execution::par);
 
 }
 
@@ -226,9 +235,9 @@ void Benchmark2() {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
 	}
 	std::cout << std::endl;
-	std::cout << "Benchmark 2" << std::endl;
-	Test("SEQ", search_server, query, std::execution::seq);
-	Test("PAR", search_server, query, std::execution::par);
+	std::cout << "Benchmark 2"s << std::endl;
+	Test("SEQ"s, search_server, query, std::execution::seq);
+	Test("PAR"s, search_server, query, std::execution::par);
 	std::cout << std::endl;
 }
 

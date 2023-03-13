@@ -6,4 +6,5 @@ int main() {
 	Example3();
 	Benchmark1();
 	Benchmark2();
+	return 0;
 }
