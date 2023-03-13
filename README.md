@@ -34,7 +34,10 @@ SearchServer search_server("and with"s);
 ```
 2. Для добавления документа в базу данных необходимо вызвать метод AddDocuments класса SearchServer и передать ему id документа, текстовый документ, статус документа (ACTUAL, IRRELEVANT, BANNED, REMOVED,) и массив рейтинговых оценок.
 ```C++
-void AddDocument(int document_id, std::string_view document, DocumentStatus status, const std::vector<int>& ratings)
+void AddDocument(int document_id,
+                 std::string_view document,
+		 DocumentStatus status,
+		 const std::vector<int>& ratings);
 ```
 Пример использования:
 ```C++
@@ -61,18 +64,18 @@ for (
 const string query = "curly and funny -not"s;
 {
     const auto [words, status] = search_server.MatchDocument(query, 1);
-	cout << words.size() << " words for document 1"s << endl;
-	// 1 words for document 1
+    cout << words.size() << " words for document 1"s << endl;
+    // 1 words for document 1
 }
 {
     const auto [words, status] = search_server.MatchDocument(execution::seq, query, 2);
-	cout << words.size() << " words for document 2"s << endl;
-	// 2 words for document 2
+    cout << words.size() << " words for document 2"s << endl;
+    // 2 words for document 2
 }
 {
-	const auto [words, status] = search_server.MatchDocument(execution::par, query, 3);
-	cout << words.size() << " words for document 3"s << endl;
-	// 0 words for document 3
+    const auto [words, status] = search_server.MatchDocument(execution::par, query, 3);
+    cout << words.size() << " words for document 3"s << endl;
+    // 0 words for document 3
 }
 ```
 Вывод:
