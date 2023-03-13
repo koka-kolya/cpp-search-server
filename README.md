@@ -174,3 +174,5 @@ Even ids:
 { document_id = 2, relevance = 0.687218, rating = 1 }
 { document_id = 4, relevance = 0.30543, rating = 1 }
 ```
+### Планы по доработке
+- Структурирование кода
